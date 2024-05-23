@@ -1,0 +1,7 @@
+nginx.conf/*
+nginx.log/*
+!nginx.conf/default.conf
+
+docker-compose.*.yml
+.vscode
+.env

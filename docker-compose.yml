@@ -1,0 +1,71 @@
+services:
+  proxy:
+    image: nginx:alpine
+    container_name: ${CONTAINER_PROXY:-proxy}
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d
+      - ./nginx.log:/var/log/nginx
+    ports:
+     - "80:80"
+     - "8000:8000"
+    networks:
+      - base_service
+
+  database:
+    image: mysql:latest
+    container_name: ${CONTAINER_DB:-database}
+    restart: always
+    environment:         
+      TZ: '${TIMEZONE:-Asia/Kuala_Lumpur}'
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${DB_DEFAULT:-storage}
+      MYSQL_INIT_SQL: |
+        SET @@GLOBAL.sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
+    volumes:
+      - database:/var/lib/mysql
+    ports:
+     - "3306:3306"
+    networks:
+      - base_service
+
+  pma:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: ${CONTAINER_PMA:-pma}
+    environment:
+      PMA_HOST: ${CONTAINER_DB:-database}
+      PMA_USER: ${DB_ROOT_USER:-root}
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      MAX_EXECUTION_TIME : ${MAX_EXECUTION_TIME:-10000}
+      UPLOAD_LIMIT: ${UPLOAD_LIMIT:-2048M}
+      MEMORY_LIMIT : ${MEMORY_LIMIT:-2048M}
+      PMA_ARBITRARY: 0
+    restart: always
+    ports:
+      - '3584:80'
+    networks:
+      - base_service
+
+  redis:
+    container_name: ${CONTAINER_REDIS:-redis}
+    image: redis:latest
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD:-redis_password}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}
+    volumes: 
+      - redis:/data
+    ports:
+      - '6379:6379'
+    networks:
+      - base_service
+
+networks:
+  base_service:
+    name: base_service
+
+volumes:
+  database:
+    driver: local
+  redis:
+    driver: local
