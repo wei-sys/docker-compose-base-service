@@ -1,11 +1,12 @@
 services:
   proxy:
-    image: nginx:alpine
+    image: nginx:stable-alpine
     container_name: ${CONTAINER_PROXY:-proxy}
     restart: always
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d
       - ./nginx.log:/var/log/nginx
+      - phpmyadmin:/var/www/html/phpmyadmin:ro
     ports:
      - "80:80"
      - "8000:8000"
@@ -30,7 +31,7 @@ services:
       - base_service
 
   pma:
-    image: phpmyadmin/phpmyadmin:latest
+    image: phpmyadmin:fpm-alpine
     container_name: ${CONTAINER_PMA:-pma}
     environment:
       PMA_HOST: ${CONTAINER_DB:-database}
@@ -45,10 +46,12 @@ services:
       - '3584:80'
     networks:
       - base_service
+    volumes:
+      - phpmyadmin:/var/www/html/
 
   redis:
     container_name: ${CONTAINER_REDIS:-redis}
-    image: redis:latest
+    image: redis:alpine
     restart: always
     command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD:-redis_password}
     environment:
@@ -65,7 +68,6 @@ networks:
     name: base_service
 
 volumes:
+  phpmyadmin:
   database:
-    driver: local
   redis:
-    driver: local
