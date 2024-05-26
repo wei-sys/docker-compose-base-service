@@ -9,7 +9,6 @@ services:
       - phpmyadmin:/var/www/html/phpmyadmin:ro
     ports:
      - "80:80"
-     - "8000:8000"
     networks:
       - base_service
 
@@ -61,6 +60,16 @@ services:
     ports:
       - '6379:6379'
     networks:
+      - base_service
+
+  focalboard:
+    image: mattermost/focalboard
+    container_name: focalboard
+    tty: true
+    stdin_open: true
+    ports: 
+      - "8000:8000"
+    networks: 
       - base_service
 
 networks:
