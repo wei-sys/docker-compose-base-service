@@ -1,6 +1,3 @@
-nginx.conf/*
-!nginx.conf/default.conf
-
 docker-compose.*.yml
 docker/*.local.sh
 .vscode
