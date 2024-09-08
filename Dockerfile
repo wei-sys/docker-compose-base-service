@@ -13,3 +13,7 @@ RUN apt-get update && \
     rm /tmp/phpmyadmin.zip && \
     chown -R 1000:1000 /var/www/html/phpmyadmin && \
     rm -rf /var/lib/apt/lists/*
+
+COPY ./docker/.bashrc /root/.bashrc
+    
+CMD ["sh", "-c", "service nginx start && php-fpm"]
