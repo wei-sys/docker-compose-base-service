@@ -15,6 +15,7 @@ services:
       
       # php configuration
       - ./docker/conf-php.ini:/usr/local/etc/php/conf.d/xxx-php.ini
+    working_dir: /var/www/html
     environment:
       # phpmyadmin configuration  
       PMA_HOST: ${CONTAINER_DB:-database}
@@ -29,9 +30,9 @@ services:
       MEMORY_LIMIT : ${MEMORY_LIMIT:-1024M}
     ports:
      - "80:80"
-     - "8080:8080"
     networks:
       - base_service
+      - vaultwarden_network 
 
   database:
     image: mysql:latest
@@ -76,9 +77,24 @@ services:
     volumes:
       - ./database/focalboard.config.json:/opt/focalboard/config.json
 
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - WEBSOCKET_ENABLED=true
+      - SIGNUPS_ALLOWED=true
+      - ADMIN_TOKEN=your_admin_token
+    volumes:
+      - ./vw-data:/data
+    networks:
+      - vaultwarden_network
+
 networks:
   base_service:
     name: base_service
+  vaultwarden_network:
+    driver: bridge
 
 volumes:
   phpmyadmin:

@@ -2,3 +2,4 @@ docker-compose.*.yml
 docker/*.local.sh
 .vscode
 .env
+vw-data
