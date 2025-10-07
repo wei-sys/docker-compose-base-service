@@ -15,6 +15,19 @@ services:
       
       # php configuration
       - ./docker/conf-php.ini:/usr/local/etc/php/conf.d/xxx-php.ini
+
+      # project
+      - ${PMI_CCB2B}
+      - ${CCB2B_V2}
+      - ${CCB2B_INVOICE_V2}
+      - ${workplace}
+      - ../pmi-summit2025/:/var/www/html/pmi-summit2025
+      - ../backoffice/:/var/www/html/backoffice
+      - ../backoffice/:/var/www/html/backoffice
+      - ../pmi-date-code-reader/:/var/www/html/pmi-date-code-reader
+      - ../campaign/:/var/www/html/campaign
+      # - ${Badget}
+      # - ${Tracker}
     working_dir: /var/www/html
     environment:
       # phpmyadmin configuration  
@@ -30,6 +43,8 @@ services:
       MEMORY_LIMIT : ${MEMORY_LIMIT:-1024M}
     ports:
      - "80:80"
+     - "8000:8000"
+     - "5173:5000"
     networks:
       - base_service
       - vaultwarden_network 
@@ -65,30 +80,62 @@ services:
       - '6379:6379'
     networks:
       - base_service
-
-  focalboard:
-    image: mattermost/focalboard
-    container_name: focalboard
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
     restart: always
-    ports: 
-      - "8000:8000"
-    networks: 
-      - base_service
-    volumes:
-      - ./database/focalboard.config.json:/opt/focalboard/config.json
-
-  vaultwarden:
-    image: vaultwarden/server:latest
-    container_name: vaultwarden
-    restart: unless-stopped
-    environment:
-      - WEBSOCKET_ENABLED=true
-      - SIGNUPS_ALLOWED=true
-      - ADMIN_TOKEN=your_admin_token
-    volumes:
-      - ./vw-data:/data
     networks:
-      - vaultwarden_network
+      - base_service
+
+  chat2db:
+    image: chat2db/chat2db:latest
+    container_name: chat2db
+    ports:
+      - "10824:10824"
+    volumes:
+      - ~/.chat2db-docker:/root/.chat2db
+      - ./id_rsa:/home/id_rsa
+    stdin_open: true
+    tty: true
+    networks:
+      - base_service
+
+  # focalboard:
+  #   image: mattermost/focalboard
+  #   container_name: focalboard
+  #   restart: always
+  #   ports: 
+  #     - "8000:8000"
+  #   networks: 
+  #     - base_service
+  #   volumes:
+  #     - ./database/focalboard.config.json:/opt/focalboard/config.json
+
+  # vaultwarden:
+  #   image: vaultwarden/server:latest
+  #   container_name: vaultwarden
+  #   restart: unless-stopped
+  #   environment:
+  #     - WEBSOCKET_ENABLED=true
+  #     - SIGNUPS_ALLOWED=true
+  #     - ADMIN_TOKEN=your_admin_token
+  #   volumes:
+  #     - ./vw-data:/data
+  #   networks:
+  #     - vaultwarden_network
+
+  hoppscotch:
+    container_name: ${CONTAINER_HOPPSCOTCH:-hoppscotch}
+    image: hoppscotch/hoppscotch:latest
+    environment:
+      - JWT_SECRET=hoppscotch_secret_key
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
 
 networks:
   base_service:
