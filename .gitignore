@@ -1,5 +1,7 @@
 docker-compose.*.yml
 docker/*.local.sh
+database/import_database/*
+**/.DS_Store
 .vscode
 .env
 vw-data
